@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -54,6 +55,11 @@ val style = TextStyle(
     fontSize = 18.sp,
     fontWeight = FontWeight.SemiBold
 )
+val style2 = TextStyle(
+    textAlign = TextAlign.End,
+    fontSize = 18.sp,
+    fontWeight = FontWeight.Bold
+)
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     var text by remember { mutableStateOf("")}
@@ -91,7 +97,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Number
-            )
+            ),
+            modifier = modifier
+                .fillMaxWidth()
         )
         Row {
             Text(text = "IVA (16%) =", style = style)
@@ -101,9 +109,31 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         Button(
             onClick = {
 
-            }
+            },
+            modifier = modifier
+                .fillMaxWidth()
         ) {
             Text(text = "Calcular")
+        }
+        Row {
+            Text(text = "Subtotal =", style = style)
+            Spacer(modifier = modifier.weight(1f))
+            Text(text = "$${decimalFormat.format(subtotal.value)}", style = style)
+        }
+        Row {
+            Text(text = "Retención IVA (10.66%) =", style = style)
+            Spacer(modifier = modifier.weight(1f))
+            Text(text = "$${decimalFormat.format(ivaRetencion.value)}", style = style)
+        }
+        Row {
+            Text(text = "Retención ISR (10%) =", style = style)
+            Spacer(modifier = modifier.weight(1f))
+            Text(text = "$${decimalFormat.format(isrRetencion.value)}", style = style)
+        }
+        Row {
+            Text(text = "Total =", style = style2)
+            Spacer(modifier = modifier.weight(1f))
+            Text(text = "$${decimalFormat.format(total.value)}", style = style2)
         }
     }
 }
