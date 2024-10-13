@@ -4,6 +4,7 @@ import android.icu.text.DecimalFormat
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +12,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -32,6 +35,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.myapplication.ui.theme.MyApplicationTheme
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,7 +58,8 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-val decimalFormat = DecimalFormat("0.00")
+
+val decimalFormat = DecimalFormat("#,##0.00")
 val style = TextStyle(
     textAlign = TextAlign.End,
     fontSize = 18.sp,
@@ -60,6 +70,7 @@ val style2 = TextStyle(
     fontSize = 18.sp,
     fontWeight = FontWeight.Bold
 )
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     var text by remember { mutableStateOf("")}
@@ -68,6 +79,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
     var ivaRetencion: MutableState<Double> = remember { mutableStateOf(0.00)}
     var isrRetencion: MutableState<Double> = remember { mutableStateOf(0.00)}
     var total: MutableState<Double> = remember { mutableStateOf(0.00)}
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     Column(
         verticalArrangement = Arrangement.spacedBy(18.dp),
@@ -92,7 +104,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             onValueChange = {newValue ->
                 val regex = Regex("^\\d*\\.?\\d{0,2}$")
                 if (newValue.isEmpty() || regex.matches(newValue)) {
-                    text = newValue
+                    text = newValue//"$${decimalFormat.format(newValue)}"
                 }
             },
             keyboardOptions = KeyboardOptions(
@@ -108,7 +120,20 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
         }
         Button(
             onClick = {
+                val importe = text.toDoubleOrNull() ?: 0.0
 
+                val calculatedIva = importe * 0.16
+                val calculatedSubtotal = importe + calculatedIva
+                val calculatedIvaRetencion = importe * 0.1066
+                val calculatedIsrRetencion = importe * 0.10
+                val calculatedTotal = calculatedSubtotal - (calculatedIvaRetencion + calculatedIsrRetencion)
+
+                iva.value = calculatedIva
+                subtotal.value = calculatedSubtotal
+                ivaRetencion.value = calculatedIvaRetencion
+                isrRetencion.value = calculatedIsrRetencion
+                total.value = calculatedTotal
+                keyboardController?.hide()
             },
             modifier = modifier
                 .fillMaxWidth()
@@ -134,6 +159,31 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
             Text(text = "Total =", style = style2)
             Spacer(modifier = modifier.weight(1f))
             Text(text = "$${decimalFormat.format(total.value)}", style = style2)
+        }
+        Spacer(modifier = modifier.weight(1f))
+        Row {
+            Spacer(modifier = modifier.weight(1f))
+            Button(
+                modifier = modifier,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Red
+                ),
+                onClick = {
+                    iva.value = 0.00
+                    subtotal.value = 0.00
+                    ivaRetencion.value = 0.00
+                    isrRetencion.value = 0.00
+                    total.value = 0.00
+                    text = ""
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Limpiar",
+                    modifier = modifier
+                        .size(24.dp)
+                )
+            }
         }
     }
 }
