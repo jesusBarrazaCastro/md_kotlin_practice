@@ -2,6 +2,9 @@
 <project version="4">
   <component name="deploymentTargetDropDown">
     <value>
+      <entry key="Ejercicio3Preview">
+        <State />
+      </entry>
       <entry key="GreetingPreview">
         <State />
       </entry>
@@ -9,6 +12,9 @@
         <State />
       </entry>
       <entry key="GreetingPreview (2)">
+        <State />
+      </entry>
+      <entry key="GreetingPreview (3)">
         <State />
       </entry>
       <entry key="app">
