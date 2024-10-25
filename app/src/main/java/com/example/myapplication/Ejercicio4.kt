@@ -13,13 +13,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.RemoveCircle
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -35,6 +38,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -46,6 +50,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,12 +63,30 @@ import coil3.compose.AsyncImage
 import com.example.myapplication.ui.theme.MyApplicationTheme
 
 
+
+data class Producto(
+    var cantidad: Int = 0,
+    val nombre: String,
+    val precio: Double
+)
+
 class Ejercicio4 {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
     @Composable
     fun Layout(modifier: Modifier = Modifier){
+
+        val productos = remember {
+            mutableStateListOf(
+                Producto(nombre = "Taco de maíz", precio = 45.00),
+                Producto(nombre = "Quesadilla", precio = 70.00),
+                Producto(nombre = "Vampiro", precio = 85.00),
+                Producto(nombre = "Agua de Horchata", precio = 35.00),
+                Producto(nombre = "Coca", precio = 45.00)
+            )
+        }
+
         val navController = rememberNavController()
         val currentRoute = remember { mutableStateOf("home") }
 
@@ -87,156 +110,190 @@ class Ejercicio4 {
                 )
             }
         ) {
-            NavigationComponent(navController = navController)
+            Box(modifier = Modifier.padding(it)) {
+                NavigationComponent(productos = productos, navController = navController, modifier = Modifier)
+            }
         }
     }
 
     @Composable
-    fun NavigationComponent(navController: NavHostController) {
+    fun NavigationComponent(productos: List<Producto>,navController: NavHostController, modifier: Modifier) {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") {
-                Home()
+                Home(productos, navController, Modifier)
             }
             composable("order") {
-                Order(navController)
+                Order(productos, navController, Modifier)
             }
         }
     }
 
     @Composable
-    fun orderItem(data: MutableMap<String, Any?>){
-        var cantidad by remember { mutableStateOf("") }
-        cantidad = (data["cantidad"] as? Int ?: 0).toString()
-        Row (
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-        ) {
-            IconButton(
-                onClick = {
+    fun OrderItem(data: Producto){
 
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.RemoveCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
-            TextField(
-                value = cantidad,
-                onValueChange = { input: String ->
-                    if (input.all { it.isDigit() }) {
-                        cantidad = input
-                        data["cantidad"] = input.toInt()
-                    }
-                },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                singleLine = true,
-                placeholder = null,
+        Box (
+           modifier = Modifier
+               .padding(vertical = 10.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .width(60.dp)
-            )
-            IconButton(
-                onClick = {
-
+            ) {
+                IconButton(
+                    onClick = {
+                        var cant: Int = data.cantidad
+                        if (cant > 0) {
+                            cant--
+                            data.cantidad = cant
+                        }
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.RemoveCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
                 }
-            ) {
-                Icon(
-                    imageVector = Icons.Outlined.AddCircle,
-                    contentDescription = null,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
-        }
-    }
-
-    @Composable
-    fun Home() {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Column {
-                orderItem(data = mutableMapOf("cantidad" to 1, "nombre" to "Taco de maíz"))
-            }
-        }
-    }
-
-    @Composable
-    fun Order(navController: NavHostController) {
-        var nombre by remember { mutableStateOf("") }
-        var apellido by remember { mutableStateOf("") }
-        var color by remember { mutableStateOf("") }
-        var credito by remember { mutableStateOf("") }
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(18.dp),
-            ) {
-                Text(
-                    text = "Alta cliente",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
+                TextField(
+                    value = data.cantidad.toString(),
+                    onValueChange = { input: String ->
+                        if (input.all { it.isDigit() }) {
+                            data.cantidad = input.toInt()
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    singleLine = true,
+                    placeholder = null,
+                    textStyle = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.End
+                    ),
                     modifier = Modifier
+                        .width(60.dp)
+                        .height(50.dp)
                 )
-                TextField(
-                    value = nombre,
-                    label = {Text("Nombre")},
-                    onValueChange = {
-                        nombre = it
+                IconButton(
+                    onClick = {
+                        var cant: Int = data.cantidad
+                        cant++
+                        data.cantidad = cant
                     }
-                )
-                TextField(
-                    value = apellido,
-                    label = {Text("Apellido")},
-                    onValueChange = {
-                        apellido = it
-                    }
-                )
-                TextField(
-                    value = color,
-                    label = {Text("Color favorito")},
-                    onValueChange = {
-                        color = it
-                    }
-                )
-                TextField(
-                    value = credito,
-                    label = {Text("Color favorito")},
-                    onValueChange = {
-                        credito = it
-                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.AddCircle,
+                        contentDescription = null,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Text(
+                    text = data.nombre,
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        textAlign = TextAlign.Start
+                    )
                 )
                 Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "$${data.precio}",
+                    style = TextStyle(
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+        }
+    }
+
+
+    @Composable
+    fun Home(productos: List<Producto>, navController: NavHostController, modifier: Modifier) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = modifier
+                .fillMaxSize()
+                .padding(10.dp)
+        ) {
+            Column {
+                Text(
+                    text = "Orden",
+                    style = TextStyle(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Spacer(modifier = modifier.weight(1f))
+                LazyColumn {
+                    items(productos) {item ->
+                        OrderItem(data = item)
+                    }
+                }
+                Spacer(modifier = modifier.weight(1f))
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(18.dp),
-                    modifier = Modifier
+                    horizontalArrangement = Arrangement.End,
+                    modifier = modifier
                 ) {
                     Button(
-                        modifier = Modifier,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color.Red
                         ),
                         onClick = {
-                            navController.popBackStack()
+                            productos.map { item ->
+                                item.cantidad = 0
+                            }
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Delete,
+                            contentDescription = null
+                        )
+                    }
+                    Spacer(modifier = modifier.weight(1f))
+                    Button(
+                        onClick = {
+                            navController.navigate("order")
+                        }
+                    ) {
+                        Text(text = "Calcular total")
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun Order(productos: List<Producto>, navController: NavHostController, modifier: Modifier) {
+        Box(
+            contentAlignment = Alignment.TopStart,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp)
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                Text(
+                    text = "Total de la orden",
+                    style = TextStyle(
+                        fontSize = 26.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+                Spacer(modifier = modifier.weight(1f))
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = modifier
+                ) {
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Red
+                        ),
+                        onClick = {
+                            navController.navigate("home")
                         }
                     ) {
                         Text(text = "Cancelar")
-                    }
-                    Button(
-                        modifier = Modifier,
-                        onClick = {
-
-                        }
-                    ) {
-                        Text(text = "OK")
                     }
                 }
             }
