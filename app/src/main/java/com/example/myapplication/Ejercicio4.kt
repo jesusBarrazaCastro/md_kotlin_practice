@@ -1,7 +1,5 @@
 package com.example.myapplication
 import android.annotation.SuppressLint
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,39 +12,35 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.outlined.AddCircle
 import androidx.compose.material.icons.outlined.RemoveCircle
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.times
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -54,6 +48,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.times
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -61,11 +56,11 @@ import androidx.navigation.compose.rememberNavController
 
 import coil3.compose.AsyncImage
 import com.example.myapplication.ui.theme.MyApplicationTheme
-
+import kotlin.time.times
 
 
 data class Producto(
-    var cantidad: Int = 0,
+    var cantidad: MutableState<Int> = mutableIntStateOf(0),
     val nombre: String,
     val precio: Double
 )
@@ -129,11 +124,9 @@ class Ejercicio4 {
     }
 
     @Composable
-    fun OrderItem(data: Producto){
-
-        Box (
-           modifier = Modifier
-               .padding(vertical = 10.dp)
+    fun OrderItem(producto: Producto) {
+        Box(
+            modifier = Modifier.padding(vertical = 10.dp)
         ) {
             Row(
                 horizontalArrangement = Arrangement.Start,
@@ -142,10 +135,8 @@ class Ejercicio4 {
             ) {
                 IconButton(
                     onClick = {
-                        var cant: Int = data.cantidad
-                        if (cant > 0) {
-                            cant--
-                            data.cantidad = cant
+                        if (producto.cantidad.value > 0) {
+                            producto.cantidad.value--
                         }
                     }
                 ) {
@@ -156,15 +147,14 @@ class Ejercicio4 {
                     )
                 }
                 TextField(
-                    value = data.cantidad.toString(),
+                    value = producto.cantidad.value.toString(),
                     onValueChange = { input: String ->
                         if (input.all { it.isDigit() }) {
-                            data.cantidad = input.toInt()
+                            producto.cantidad.value = if(input.isEmpty())  0 else input.toInt()
                         }
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     singleLine = true,
-                    placeholder = null,
                     textStyle = TextStyle(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
@@ -176,9 +166,7 @@ class Ejercicio4 {
                 )
                 IconButton(
                     onClick = {
-                        var cant: Int = data.cantidad
-                        cant++
-                        data.cantidad = cant
+                        producto.cantidad.value++
                     }
                 ) {
                     Icon(
@@ -188,7 +176,7 @@ class Ejercicio4 {
                     )
                 }
                 Text(
-                    text = data.nombre,
+                    text = producto.nombre,
                     style = TextStyle(
                         fontSize = 18.sp,
                         textAlign = TextAlign.Start
@@ -196,9 +184,47 @@ class Ejercicio4 {
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 Text(
-                    text = "$${data.precio}",
+                    text = "$${producto.precio}",
                     style = TextStyle(
                         fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun TotalItem(producto: Producto) {
+        Box(
+            modifier = Modifier.padding(vertical = 10.dp)
+        ) {
+            Row(
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+            ) {
+                Text(
+                    text = producto.cantidad.value.toString(),
+                    style = TextStyle(
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start
+                    )
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Text(
+                    text = producto.nombre,
+                    style = TextStyle(
+                        fontSize = 22.sp,
+                        textAlign = TextAlign.Start
+                    )
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "$${producto.precio * producto.cantidad.value}",
+                    style = TextStyle(
+                        fontSize = 22.sp,
                         fontWeight = FontWeight.Bold
                     )
                 )
@@ -225,8 +251,8 @@ class Ejercicio4 {
                 )
                 Spacer(modifier = modifier.weight(1f))
                 LazyColumn {
-                    items(productos) {item ->
-                        OrderItem(data = item)
+                    items(productos) { item ->
+                        OrderItem(producto = item)
                     }
                 }
                 Spacer(modifier = modifier.weight(1f))
@@ -240,7 +266,7 @@ class Ejercicio4 {
                         ),
                         onClick = {
                             productos.map { item ->
-                                item.cantidad = 0
+                                item.cantidad.value = 0
                             }
                         }
                     ) {
@@ -264,6 +290,10 @@ class Ejercicio4 {
 
     @Composable
     fun Order(productos: List<Producto>, navController: NavHostController, modifier: Modifier) {
+        val propinaSelected = remember { mutableIntStateOf(0) }
+        val totalConPropina = remember(productos, propinaSelected.value) {
+            productos.sumOf { (it.cantidad.value * it.precio) + ((it.cantidad.value * it.precio) * (propinaSelected.value / 100.0)) }
+        }
         Box(
             contentAlignment = Alignment.TopStart,
             modifier = Modifier
@@ -273,28 +303,120 @@ class Ejercicio4 {
             Column(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text(
-                    text = "Total de la orden",
-                    style = TextStyle(
-                        fontSize = 26.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-                Spacer(modifier = modifier.weight(1f))
                 Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = modifier
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Text(
+                        text = "Total de la orden",
+                        style = TextStyle(
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = modifier.weight(1f))
                     Button(
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Red
+                            containerColor = Color.LightGray
                         ),
                         onClick = {
                             navController.navigate("home")
                         }
                     ) {
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = null
+                        )
                         Text(text = "Cancelar")
                     }
+                }
+                LazyColumn {
+                    items(productos) { item ->
+                        TotalItem(producto = item)
+                    }
+                }
+                Spacer(modifier = modifier.weight(1f))
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = modifier
+                ) {
+                    Text(
+                        text = "Total: ",
+                        style = TextStyle(
+                            fontSize = 27.sp,
+                            //fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = modifier.weight(1f))
+                    Text(
+                        text = "$${productos.sumOf { it.cantidad.value * it.precio }}",
+                        style = TextStyle(
+                            fontSize = 27.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                }
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = modifier
+                ) {
+                    Text(
+                        text = "Propina: ",
+                        style = TextStyle(
+                            fontSize = 16.sp
+                        )
+                    )
+                    Spacer(modifier = modifier.weight(1f))
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if(propinaSelected.value == 0) Color.DarkGray else Color.LightGray
+                        ),
+                        onClick = {
+                            propinaSelected.value = 0
+                        }
+                    ) {
+                        Text(text = "0 %")
+                    }
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if(propinaSelected.value == 10) Color.DarkGray else Color.LightGray
+                        ),
+                        onClick = {
+                            propinaSelected.value = 10
+                        }
+                    ) {
+                        Text(text = "10 %")
+                    }
+                    Button(
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if(propinaSelected.value == 15) Color.DarkGray else Color.LightGray
+                        ),
+                        onClick = {
+                            propinaSelected.value = 15
+                        }
+                    ) {
+                        Text(text = "15 %")
+                    }
+                }
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = modifier
+                ) {
+                    Text(
+                        text = "Total con propina: ",
+                        style = TextStyle(
+                            fontSize = 27.sp,
+                            //fontWeight = FontWeight.Bold
+                        )
+                    )
+                    Spacer(modifier = modifier.weight(1f))
+                    Text(
+                        text = "$${totalConPropina}",
+                        style = TextStyle(
+                            fontSize = 27.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
                 }
             }
         }

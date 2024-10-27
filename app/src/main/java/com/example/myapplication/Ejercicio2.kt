@@ -123,30 +123,27 @@ class Ejercicio2 {
                         }
                 )
             }
-            if (azul.value) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.Blue)
-                        .constrainAs(boxAzul) {
-                            top.linkTo(boxRojo.bottom, margin = 5.dp)
-                            start.linkTo(parent.start)
-                            width = Dimension.value(120.dp)
-                            height = Dimension.value(120.dp)
-                        }
-                )
-            }
-            if (verde.value) {
-                Box(
-                    modifier = Modifier
-                        .background(Color.Green)
-                        .constrainAs(boxVerde) {
-                            top.linkTo(boxAzul.bottom, margin = 5.dp)
-                            start.linkTo(boxAzul.end, margin = 5.dp)
-                            width = Dimension.value(120.dp)
-                            height = Dimension.value(120.dp)
-                        }
-                )
-            }
+            Box(
+                modifier = Modifier
+                    .background(if(azul.value) Color.Blue else Color.White)
+                    .constrainAs(boxAzul) {
+                        top.linkTo(boxRojo.bottom, margin = 5.dp)
+                        start.linkTo(parent.start)
+                        width = Dimension.value(120.dp)
+                        height = Dimension.value(120.dp)
+                    }
+            )
+            Box(
+                modifier = Modifier
+                    .background(if(verde.value) Color.Green else Color.White)
+                    .constrainAs(boxVerde) {
+                        top.linkTo(boxAzul.bottom, margin = 5.dp)
+                        start.linkTo(boxAzul.end, margin = 5.dp)
+                        width = Dimension.value(120.dp)
+                        height = Dimension.value(120.dp)
+                    }
+            )
+
             
 
             
