@@ -3,7 +3,7 @@
 Repositorio con los ejercicios para clase de desarrollo movil
 
 Los ejercicios se encuentran en:
-
+```
 MyApplication/
 ├── app/
 │   ├── build/
@@ -24,4 +24,4 @@ MyApplication/
 │   │   └── test/
 ├── gradle/
 └── build.gradle
-
+```
